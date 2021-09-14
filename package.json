@@ -1,0 +1,23 @@
+{
+  "name": "coinbase-api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/akump/coinbase-api.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/akump/coinbase-api/issues"
+  },
+  "homepage": "https://github.com/akump/coinbase-api#readme",
+  "dependencies": {
+    "coinbase": "^2.0.8",
+    "dotenv": "^10.0.0"
+  }
+}
