@@ -1,0 +1,33 @@
+<html>
+
+<head>
+    <title>Login</title>
+    <script>
+        function login() {
+            let apiKey = document.getElementById("apiKey").value;
+            let apiSecret = document.getElementById("apiSecret").value;
+
+            const {
+                ipcRenderer
+            } = require('electron')
+
+            ipcRenderer.send('asynchronous-message', {
+                apiKey: apiKey,
+                apiSecret: apiSecret
+            })
+            window.close();
+        }
+    </script>
+</head>
+
+<body>
+    <form>
+        <label for="apiKey">apiKey:</label><br>
+        <input type="text" id="apiKey" name="apiKey" value=""><br>
+        <label for="apiSecret">apiSecret:</label><br>
+        <input type="text" id="apiSecret" name="apiSecret" value=""><br><br>
+        <button onclick="login()" value="Login">Login</button>
+    </form>
+</body>
+
+</html>
