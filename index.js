@@ -3,10 +3,35 @@ const {
     Menu,
     Tray,
     BrowserWindow,
+    nativeImage,
     ipcMain
 } = require('electron');
-const Store = require('electron-store');
-const store = new Store();
+const path = require('path');
+const fs = require('fs');
+const dataPath = app.getPath('userData');
+console.log(dataPath)
+const configPath = path.join(dataPath, 'config.json');
+
+function writeData(key, value) {
+    let contents = parseData()
+    contents[key] = value;
+    fs.writeFileSync(configPath, JSON.stringify(contents));
+}
+
+function readData(key) {
+    let contents = parseData()
+    return contents[key];
+}
+
+function parseData() {
+    const defaultData = {}
+    try {
+        return JSON.parse(fs.readFileSync(configPath));
+    } catch (error) {
+        return defaultData;
+    }
+}
+
 const Client = require('coinbase').Client;
 let coinClient;
 let isQuiting;
@@ -14,16 +39,11 @@ let tray;
 let loginWindow;
 let apiKey;
 let apiSecret;
+let hasCache = false;
 
-if (store.get('apiKey') && store.get('apiSecret')) {
-    coinClient = new Client({
-        'apiKey': store.get('apiKey'),
-        'apiSecret': store.get('apiSecret'),
-        strictSSL: false
-    });
-    apiKey = store.get('apiSecret');
-    apiSecret = store.get('apiSecret');
-}
+
+console.log(readData('apiKey'))
+console.log(readData('apiSecret'))
 
 const updateTitle = function (pagination = {}, allUserAccounts = []) {
     if (apiKey && apiSecret && coinClient) {
@@ -37,22 +57,35 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
                 let totalPortfolioValue = allUserAccounts.reduce(function (previousValue, currentValue) {
                     return previousValue + parseFloat(currentValue.native_balance.amount)
                 }, 0)
-                console.log(totalPortfolioValue)
-                tray.setTitle(`$${new Intl.NumberFormat().format(totalPortfolioValue)}`)
+                const formattedNumber = Number(totalPortfolioValue.toFixed(2)).toLocaleString('en');
+                console.log(formattedNumber);
+                tray.setTitle(`$${formattedNumber}`);
             }
         });
+    } else {
+        tray.setTitle(`$0 - Connect account`);
     }
 }
 
-// receive message from index.html
+if (readData('apiKey') && readData('apiSecret')) {
+    coinClient = new Client({
+        'apiKey': readData('apiKey'),
+        'apiSecret': readData('apiSecret'),
+        strictSSL: false
+    });
+    apiKey = readData('apiKey');
+    apiSecret = readData('apiSecret');
+    hasCache = true;
+}
+
 ipcMain.on('asynchronous-message', (event, arg) => {
     if (arg.apiKey) {
         apiKey = arg.apiKey;
-        store.set('apiKey', arg.apiKey);
+        writeData('apiKey', arg.apiKey);
     }
     if (arg.apiSecret) {
         apiSecret = arg.apiSecret;
-        store.set('apiKapiSecretey', arg.apiSecret);
+        writeData('apiSecret', arg.apiSecret);
     }
     coinClient = new Client({
         'apiKey': apiKey,
@@ -63,7 +96,7 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     loginWindow.hide();
 });
 
-setInterval(updateTitle, 60 * 1000)
+setInterval(updateTitle, 15 * 1000)
 
 app.on('before-quit', function () {
     isQuiting = true;
@@ -71,8 +104,8 @@ app.on('before-quit', function () {
 
 app.whenReady().then(() => {
     loginWindow = new BrowserWindow({
-        width: 300,
-        height: 400,
+        width: 450,
+        height: 700,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -80,6 +113,8 @@ app.whenReady().then(() => {
         show: false,
     })
     loginWindow.loadFile('index.html');
+    // loginWindow.webContents.openDevTools();
+
 
     loginWindow.on('close', function (event) {
         if (!isQuiting) {
@@ -89,9 +124,9 @@ app.whenReady().then(() => {
         }
     });
 
-    tray = new Tray('coin3.png')
+    tray = new Tray(nativeImage.createEmpty());
     const contextMenu = Menu.buildFromTemplate([{
-            label: 'Login',
+            label: 'Connect to Coinbase...',
             click: () => {
                 loginWindow.show();
             }
@@ -107,5 +142,8 @@ app.whenReady().then(() => {
 
 
     tray.setContextMenu(contextMenu);
-    tray.setTitle('wooo!')
+    tray.setTitle(`Coinbase`);
+    if (hasCache) {
+        updateTitle();
+    }
 })
