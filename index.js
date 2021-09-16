@@ -4,6 +4,7 @@ const {
     Tray,
     BrowserWindow,
     nativeImage,
+    shell,
     ipcMain
 } = require('electron');
 const path = require('path');
@@ -41,10 +42,69 @@ let apiKey;
 let apiSecret;
 let hasCache = false;
 
+let contextMenuOptions = [{
+        label: 'Connect to Coinbase...',
+        click: () => {
+            loginWindow.show();
+        }
+    },
+    {
+        label: 'Quit',
+        click: function () {
+            isQuiting = true;
+            app.quit();
+        }
+    }
+];
 
-console.log(readData('apiKey'))
-console.log(readData('apiSecret'))
+const logout = function () {
+    apiKey = undefined;
+    apiSecret = undefined;
+    coinClient = undefined;
+    hasCache = false;
+    updateTitle();
+    const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
+    tray.setContextMenu(contextMenu);
+};
 
+
+
+const buildContextMenu = function (allUserAccounts) {
+    let newContextMenu = [{
+            type: 'separator'
+        },
+        {
+            label: 'Re-enter API key...',
+            click: () => {
+                loginWindow.show();
+            }
+        },
+        {
+            label: 'Logout',
+            click: () => {
+                logout();
+            }
+        }, {
+            label: 'Quit',
+            click: function () {
+                isQuiting = true;
+                app.quit();
+            }
+        }
+    ];
+    for (const acc of allUserAccounts) {
+        if (parseInt(acc.native_balance.amount) > 0)
+            newContextMenu = [{
+                label: `$${acc.native_balance.amount} ${acc.balance.currency} - ${parseFloat(acc.balance.amount).toFixed(8)}`,
+                click: () => {
+                    shell.openExternal(`https://www.coinbase.com/accounts/${acc.id}`)
+                }
+            }, ...newContextMenu, ]
+    }
+
+    const contextMenu = Menu.buildFromTemplate(newContextMenu);
+    tray.setContextMenu(contextMenu);
+}
 const updateTitle = function (pagination = {}, allUserAccounts = []) {
     if (apiKey && apiSecret && coinClient) {
         coinClient.getAccounts(pagination, function (err, accounts, pagination) {
@@ -56,10 +116,15 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
             } else {
                 let totalPortfolioValue = allUserAccounts.reduce(function (previousValue, currentValue) {
                     return previousValue + parseFloat(currentValue.native_balance.amount)
-                }, 0)
-                const formattedNumber = Number(totalPortfolioValue.toFixed(2)).toLocaleString('en');
+                }, 0);
+                totalPortfolioValue = totalPortfolioValue.toFixed(2);
+                const formattedNumber = Number(totalPortfolioValue).toLocaleString('en', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                });
                 console.log(formattedNumber);
                 tray.setTitle(`$${formattedNumber}`);
+                buildContextMenu(allUserAccounts);
             }
         });
     } else {
@@ -96,7 +161,7 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     loginWindow.hide();
 });
 
-setInterval(updateTitle, 15 * 1000)
+setInterval(updateTitle, 15 * 1000);
 
 app.on('before-quit', function () {
     isQuiting = true;
@@ -113,8 +178,7 @@ app.whenReady().then(() => {
         show: false,
     })
     loginWindow.loadFile('index.html');
-    // loginWindow.webContents.openDevTools();
-
+    loginWindow.webContents.openDevTools();
 
     loginWindow.on('close', function (event) {
         if (!isQuiting) {
@@ -125,25 +189,12 @@ app.whenReady().then(() => {
     });
 
     tray = new Tray(nativeImage.createEmpty());
-    const contextMenu = Menu.buildFromTemplate([{
-            label: 'Connect to Coinbase...',
-            click: () => {
-                loginWindow.show();
-            }
-        },
-        {
-            label: 'Quit',
-            click: function () {
-                isQuiting = true;
-                app.quit();
-            }
-        }
-    ])
 
-
-    tray.setContextMenu(contextMenu);
     tray.setTitle(`Coinbase`);
     if (hasCache) {
         updateTitle();
+    } else {
+        const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
+        tray.setContextMenu(contextMenu);
     }
 })
