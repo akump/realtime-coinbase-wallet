@@ -23,8 +23,29 @@
         }
 
         .submit {
-            width: fit-content;
             align-self: flex-end;
+            width: fit-content;
+            background-color: rgb(55, 115, 245);
+            color: black;
+            padding: 10px 16px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cancel {
+            align-self: flex-end;
+            width: fit-content;
+            background-color: lightgray;
+            color: black;
+            padding: 10px 16px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 15px;
+            ;
         }
 
         input {
@@ -42,23 +63,19 @@
             box-sizing: border-box;
         }
 
-        button {
-            width: 100%;
-            background-color: rgb(55, 115, 245);
-            color: black;
-            padding: 14px 20px;
-            margin: 8px 0;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
         a {
             color: rgb(55, 115, 245);
         }
 
         h3 {
             margin-top: 0;
+        }
+
+        .buttons {
+            display: flex;
+            align-items: end;
+            width: 100%;
+            flex-direction: row-reverse;
         }
     </style>
     <script>
@@ -76,6 +93,10 @@
             })
             window.close();
         }
+
+        function cancel() {
+            window.close();
+        }
     </script>
 </head>
 
@@ -85,17 +106,20 @@
         We recommend Mint's documenation for generating API keys. <a
             href="https://help.mint.com/2026833011/How-do-I-add-my-Coinbase-account-in-Mint.htm" target="_blank">Get
             an API Key and API Secret</a>
-        for linking your account at the Coinbase website before you enter your sign-in.
-        info here
+        for linking your account at the Coinbase website before you enter your sign-in
+        info here.
     </p>
     <form>
         <label for="apiKey">API Key (Generated from Coinbase website)</label>
-        <input type="text" id="apiKey" name="apiKey" placeholder="apiKey">
+        <input type="text" id="apiKey" name="apiKey" placeholder="API Key">
         <br>
         <label for="apiSecret">API Secret (Generated from Coinbase website)</label>
-        <input type="text" id="apiSecret" name="apiSecret" placeholder="apiSecret">
+        <input type="text" id="apiSecret" name="apiSecret" placeholder="API Secret">
         <br>
-        <button class="submit" onclick="login()" value="Connect">Connect</button>
+        <div class="buttons">
+            <button class="submit" onclick="login()" value="Connect">Connect</button>
+            <button class="cancel" onclick="cancel()" value="Cancel">Cancel</button>
+        </div>
     </form>
 </body>
 
