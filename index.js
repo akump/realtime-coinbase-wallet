@@ -62,11 +62,12 @@ const logout = function () {
     apiSecret = undefined;
     coinClient = undefined;
     hasCache = false;
+    writeData('apiKey', '');
+    writeData('apiSecret', 'arg.apiSecret');
     updateTitle();
     const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
     tray.setContextMenu(contextMenu);
 };
-
 
 
 const buildContextMenu = function (allUserAccounts) {
@@ -92,14 +93,15 @@ const buildContextMenu = function (allUserAccounts) {
             }
         }
     ];
-    for (const acc of allUserAccounts) {
-        if (parseInt(acc.native_balance.amount) > 0)
+    for (let acc of allUserAccounts) {
+        if (parseInt(acc.native_balance.amount) > 0) {
             newContextMenu = [{
                 label: `$${acc.native_balance.amount} ${acc.balance.currency} - ${parseFloat(acc.balance.amount).toFixed(8)}`,
                 click: () => {
                     shell.openExternal(`https://www.coinbase.com/accounts/${acc.id}`)
                 }
             }, ...newContextMenu, ]
+        }
     }
 
     const contextMenu = Menu.buildFromTemplate(newContextMenu);
@@ -123,12 +125,16 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
                     maximumFractionDigits: 2,
                 });
                 console.log(formattedNumber);
-                tray.setTitle(`$${formattedNumber}`);
+                tray.setTitle(`$${formattedNumber}`, {
+                    fontType: 'monospacedDigit'
+                });
                 buildContextMenu(allUserAccounts);
             }
         });
     } else {
-        tray.setTitle(`$0 - Connect account`);
+        tray.setTitle(`$0 - Connect account`, {
+            fontType: 'monospacedDigit'
+        });
     }
 }
 
@@ -161,7 +167,7 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     loginWindow.hide();
 });
 
-setInterval(updateTitle, 15 * 1000);
+setInterval(updateTitle, 30 * 1000);
 
 app.on('before-quit', function () {
     isQuiting = true;
@@ -170,7 +176,7 @@ app.on('before-quit', function () {
 app.whenReady().then(() => {
     loginWindow = new BrowserWindow({
         width: 450,
-        height: 700,
+        height: 600,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
@@ -190,7 +196,9 @@ app.whenReady().then(() => {
 
     tray = new Tray(nativeImage.createEmpty());
 
-    tray.setTitle(`Coinbase`);
+    tray.setTitle(`Coinbase`, {
+        fontType: 'monospacedDigit'
+    });
     if (hasCache) {
         updateTitle();
     } else {
