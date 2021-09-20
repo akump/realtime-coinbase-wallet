@@ -7,33 +7,12 @@ const {
     shell,
     ipcMain
 } = require('electron');
-const path = require('path');
-const fs = require('fs');
-const dataPath = app.getPath('userData');
-console.log(dataPath)
-const configPath = path.join(dataPath, 'config.json');
-
-function writeData(key, value) {
-    let contents = parseData()
-    contents[key] = value;
-    fs.writeFileSync(configPath, JSON.stringify(contents));
-}
-
-function readData(key) {
-    let contents = parseData()
-    return contents[key];
-}
-
-function parseData() {
-    const defaultData = {}
-    try {
-        return JSON.parse(fs.readFileSync(configPath));
-    } catch (error) {
-        return defaultData;
-    }
-}
-
+const {
+    writeData,
+    readData
+} = require('./src/dataStore.js');
 const Client = require('coinbase').Client;
+
 let coinClient;
 let isQuiting;
 let tray;
@@ -43,24 +22,24 @@ let apiSecret;
 let hasCache = false;
 
 let contextMenuOptions = [{
-        label: 'Connect to Coinbase...',
-        click: () => {
-            loginWindow.show();
-        }
-    },
-    {
-        label: 'Quit',
-        click: function () {
-            isQuiting = true;
-            app.quit();
-        }
+    label: 'Connect to Coinbase...',
+    click: () => {
+        loginWindow.show();
     }
+},
+{
+    label: 'Quit',
+    click: function () {
+        isQuiting = true;
+        app.quit();
+    }
+}
 ];
 
 const logout = function () {
-    apiKey = undefined;
-    apiSecret = undefined;
-    coinClient = undefined;
+    apiKey = null;
+    apiSecret = null;
+    coinClient = null;
     hasCache = false;
     writeData('apiKey', '');
     writeData('apiSecret', 'arg.apiSecret');
@@ -72,26 +51,26 @@ const logout = function () {
 
 const buildContextMenu = function (allUserAccounts) {
     let newContextMenu = [{
-            type: 'separator'
-        },
-        {
-            label: 'Re-enter API key...',
-            click: () => {
-                loginWindow.show();
-            }
-        },
-        {
-            label: 'Logout',
-            click: () => {
-                logout();
-            }
-        }, {
-            label: 'Quit',
-            click: function () {
-                isQuiting = true;
-                app.quit();
-            }
+        type: 'separator'
+    },
+    {
+        label: 'Re-enter API key...',
+        click: () => {
+            loginWindow.show();
         }
+    },
+    {
+        label: 'Logout',
+        click: () => {
+            logout();
+        }
+    }, {
+        label: 'Quit',
+        click: function () {
+            isQuiting = true;
+            app.quit();
+        }
+    }
     ];
     for (let acc of allUserAccounts) {
         if (parseInt(acc.native_balance.amount) > 0) {
@@ -103,7 +82,7 @@ const buildContextMenu = function (allUserAccounts) {
                 click: () => {
                     shell.openExternal(`https://www.coinbase.com/accounts/${acc.id}`)
                 }
-            }, ...newContextMenu, ]
+            }, ...newContextMenu,]
         }
     }
 
@@ -128,27 +107,26 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
                     maximumFractionDigits: 2,
                 });
                 console.log(formattedNumber);
-                tray.setTitle(`$${formattedNumber}`, {
-                    fontType: 'monospacedDigit'
-                });
+                tray.setMonospacedTitle(`$${formattedNumber}`);
                 buildContextMenu(allUserAccounts);
             }
         });
     } else {
-        tray.setTitle(`$0 - Connect account`, {
-            fontType: 'monospacedDigit'
-        });
+        tray.setMonospacedTitle(`$0 - Connect account}`);
     }
 }
 
-if (readData('apiKey') && readData('apiSecret')) {
+const savedApiKey = readData('apiKey');
+const savedApiSecret = readData('apiSecret');
+
+if (savedApiKey && savedApiSecret) {
     coinClient = new Client({
-        'apiKey': readData('apiKey'),
-        'apiSecret': readData('apiSecret'),
+        'apiKey': savedApiKey,
+        'apiSecret': savedApiSecret,
         strictSSL: false
     });
-    apiKey = readData('apiKey');
-    apiSecret = readData('apiSecret');
+    apiKey = savedApiKey;
+    apiSecret = savedApiSecret;
     hasCache = true;
 }
 
@@ -188,7 +166,7 @@ app.whenReady().then(() => {
         show: false,
     })
     loginWindow.loadFile('index.html');
-    loginWindow.webContents.openDevTools();
+    // loginWindow.webContents.openDevTools();
 
     loginWindow.on('close', function (event) {
         if (!isQuiting) {
@@ -200,9 +178,12 @@ app.whenReady().then(() => {
 
     tray = new Tray(nativeImage.createEmpty());
 
-    tray.setTitle(`Coinbase`, {
-        fontType: 'monospacedDigit'
-    });
+    tray.setMonospacedTitle = function (text) {
+        tray.setTitle(text, {
+            fontType: 'monospacedDigit'
+        });
+    }
+    tray.setMonospacedTitle('Coinbase');
     if (hasCache) {
         updateTitle();
     } else {
