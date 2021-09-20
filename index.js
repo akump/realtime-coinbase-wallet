@@ -95,8 +95,11 @@ const buildContextMenu = function (allUserAccounts) {
     ];
     for (let acc of allUserAccounts) {
         if (parseInt(acc.native_balance.amount) > 0) {
+            const usd = acc.native_balance.amount;
+            const coin = acc.balance.currency;
+            const coin_balance = parseFloat(acc.balance.amount).toFixed(8);
             newContextMenu = [{
-                label: `$${acc.native_balance.amount} ${acc.balance.currency} - ${parseFloat(acc.balance.amount).toFixed(8)}`,
+                label: `${coin_balance} ${coin} - $${usd}`,
                 click: () => {
                     shell.openExternal(`https://www.coinbase.com/accounts/${acc.id}`)
                 }
@@ -174,6 +177,7 @@ app.on('before-quit', function () {
 });
 
 app.whenReady().then(() => {
+    app.dock.hide();
     loginWindow = new BrowserWindow({
         width: 450,
         height: 600,
