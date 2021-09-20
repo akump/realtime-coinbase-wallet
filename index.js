@@ -172,7 +172,7 @@ app.whenReady().then(() => {
         tray.setTitle(text, {
             fontType: 'monospacedDigit'
         });
-    }
+    };
     tray.setMonospacedTitle('Coinbase');
 
     setInterval(updateTitle, 30 * 1000);
