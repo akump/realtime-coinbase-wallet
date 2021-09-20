@@ -29,7 +29,7 @@ let contextMenuOptions = [{
 },
 {
     label: 'Quit',
-    click: function () {
+    click: () => {
         isQuiting = true;
         app.quit();
     }
@@ -42,12 +42,11 @@ const logout = function () {
     coinClient = null;
     hasCache = false;
     writeData('apiKey', '');
-    writeData('apiSecret', 'arg.apiSecret');
+    writeData('apiSecret', '');
     updateTitle();
     const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
     tray.setContextMenu(contextMenu);
 };
-
 
 const buildContextMenu = function (allUserAccounts) {
     let newContextMenu = [{
@@ -66,7 +65,7 @@ const buildContextMenu = function (allUserAccounts) {
         }
     }, {
         label: 'Quit',
-        click: function () {
+        click: () => {
             isQuiting = true;
             app.quit();
         }
@@ -89,18 +88,17 @@ const buildContextMenu = function (allUserAccounts) {
     const contextMenu = Menu.buildFromTemplate(newContextMenu);
     tray.setContextMenu(contextMenu);
 }
+
 const updateTitle = function (pagination = {}, allUserAccounts = []) {
     if (apiKey && apiSecret && coinClient) {
-        coinClient.getAccounts(pagination, function (err, accounts, pagination) {
+        coinClient.getAccounts(pagination, (err, accounts, pagination) => {
             if (accounts) {
                 allUserAccounts = [...allUserAccounts, ...accounts];
             }
             if (pagination) {
                 updateTitle(pagination, allUserAccounts)
             } else {
-                let totalPortfolioValue = allUserAccounts.reduce(function (previousValue, currentValue) {
-                    return previousValue + parseFloat(currentValue.native_balance.amount)
-                }, 0);
+                let totalPortfolioValue = allUserAccounts.reduce((previousValue, currentValue) => previousValue + parseFloat(currentValue.native_balance.amount), 0);
                 totalPortfolioValue = totalPortfolioValue.toFixed(2);
                 const formattedNumber = Number(totalPortfolioValue).toLocaleString('en', {
                     minimumFractionDigits: 2,
@@ -112,7 +110,7 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
             }
         });
     } else {
-        tray.setMonospacedTitle(`$0 - Connect account}`);
+        tray.setMonospacedTitle(`$0 - Connect account`);
     }
 }
 
@@ -148,11 +146,11 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     loginWindow.hide();
 });
 
-setInterval(updateTitle, 30 * 1000);
 
 app.on('before-quit', function () {
     isQuiting = true;
 });
+
 
 app.whenReady().then(() => {
     app.dock.hide();
@@ -168,7 +166,7 @@ app.whenReady().then(() => {
     loginWindow.loadFile('index.html');
     // loginWindow.webContents.openDevTools();
 
-    loginWindow.on('close', function (event) {
+    loginWindow.on('close', event => {
         if (!isQuiting) {
             event.preventDefault();
             loginWindow.hide();
@@ -177,13 +175,15 @@ app.whenReady().then(() => {
     });
 
     tray = new Tray(nativeImage.createEmpty());
-
     tray.setMonospacedTitle = function (text) {
         tray.setTitle(text, {
             fontType: 'monospacedDigit'
         });
     }
     tray.setMonospacedTitle('Coinbase');
+
+    setInterval(updateTitle, 30 * 1000);
+
     if (hasCache) {
         updateTitle();
     } else {
