@@ -23,9 +23,8 @@ let hasCache = false;
 
 let contextMenuOptions = [{
     label: 'Connect to Coinbase...',
-    click: () => {
-        loginWindow.show();
-    }
+    click: () => loginWindow.show()
+
 },
 {
     label: 'Quit',
@@ -54,15 +53,11 @@ const buildContextMenu = function (allUserAccounts) {
     },
     {
         label: 'Re-enter API key...',
-        click: () => {
-            loginWindow.show();
-        }
+        click: () => loginWindow.show()
     },
     {
         label: 'Logout',
-        click: () => {
-            logout();
-        }
+        click: () => logout()
     }, {
         label: 'Quit',
         click: () => {
@@ -78,9 +73,7 @@ const buildContextMenu = function (allUserAccounts) {
             const coin_balance = parseFloat(acc.balance.amount).toFixed(8);
             newContextMenu = [{
                 label: `${coin_balance} ${coin} - $${usd}`,
-                click: () => {
-                    shell.openExternal(`https://www.coinbase.com/accounts/${acc.id}`)
-                }
+                click: () => shell.openExternal(`https://www.coinbase.com/accounts/${acc.id}`)
             }, ...newContextMenu,]
         }
     }
@@ -162,7 +155,7 @@ app.whenReady().then(() => {
             contextIsolation: false,
         },
         show: false,
-    })
+    });
     loginWindow.loadFile('index.html');
     // loginWindow.webContents.openDevTools();
 
