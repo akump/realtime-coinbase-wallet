@@ -1,5 +1,5 @@
 {
-    "name": "coinbase-api",
+    "name": "realtime-coin-wallet",
     "version": "1.0.0",
     "description": "Tool to show coinbase portfolio price in the menu bar",
     "main": "index.js",
