@@ -7,7 +7,7 @@ Reatlime Coinbase Wallet is a macOS menu bar application for Coinbase users to d
 ## Install
 
 1. Download the latest app.zip from [releases](https://github.com/akump/realtime-coinbase-wallet/releases)
-2. Unzip app.js
+2. Unzip app.zip
 3. Drag the app to your Mac's application folder
 4. Double click to open
 5. If you run into permission issues, follow these steps
