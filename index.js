@@ -1,3 +1,4 @@
+// TODO write an about page
 const {
     app,
     Menu,
@@ -21,10 +22,9 @@ let apiKey;
 let apiSecret;
 let hasCache = false;
 
-let contextMenuOptions = [{
-    label: 'Connect to Coinbase...',
-    click: () => loginWindow.show()
-
+const permanentContextMenuTemplate = [{
+    label: 'Love the app? Buy me a coffee ☕',
+    click: () => shell.openExternal('https://www.buymeacoffee.com/akump')
 },
 {
     label: 'Quit',
@@ -32,7 +32,14 @@ let contextMenuOptions = [{
         isQuiting = true;
         app.quit();
     }
-}
+}];
+
+const connectMenuTemplate = [{
+    label: 'Connect to Coinbase...',
+    click: () => loginWindow.show()
+
+},
+...permanentContextMenuTemplate
 ];
 
 const logout = function () {
@@ -43,8 +50,7 @@ const logout = function () {
     writeData('apiKey', '');
     writeData('apiSecret', '');
     updateTitle();
-    const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
-    tray.setContextMenu(contextMenu);
+    tray.setContextMenuFromTemplate(connectMenuTemplate);
 };
 
 const buildContextMenu = function (allUserAccounts) {
@@ -77,10 +83,8 @@ const buildContextMenu = function (allUserAccounts) {
             }, ...newContextMenu,]
         }
     }
-
-    const contextMenu = Menu.buildFromTemplate(newContextMenu);
-    tray.setContextMenu(contextMenu);
-}
+    tray.setContextMenuFromTemplate(newContextMenu);
+};
 
 const updateTitle = function (pagination = {}, allUserAccounts = []) {
     if (apiKey && apiSecret && coinClient) {
@@ -97,7 +101,7 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
                 });
-                console.log(formattedNumber);
+                console.log(`${new Date()}: ${formattedNumber}`);
                 tray.setMonospacedTitle(`$${formattedNumber}`);
                 buildContextMenu(allUserAccounts);
             }
@@ -173,14 +177,17 @@ app.whenReady().then(() => {
             fontType: 'monospacedDigit'
         });
     };
-    tray.setMonospacedTitle('Coinbase');
+    tray.setContextMenuFromTemplate = function (contextMenuOptions) {
+        const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
+        tray.setContextMenu(contextMenu);
+    };
+    tray.setMonospacedTitle('Realtime Coinbase');
 
     setInterval(updateTitle, 30 * 1000);
 
     if (hasCache) {
         updateTitle();
     } else {
-        const contextMenu = Menu.buildFromTemplate(contextMenuOptions);
-        tray.setContextMenu(contextMenu);
+        tray.setContextMenuFromTemplate(connectMenuTemplate);
     }
 })
