@@ -64,13 +64,8 @@ const buildContextMenu = function (allUserAccounts) {
     {
         label: 'Logout',
         click: () => logout()
-    }, {
-        label: 'Quit',
-        click: () => {
-            isQuiting = true;
-            app.quit();
-        }
-    }
+    },
+    ...permanentContextMenuTemplate
     ];
     for (let acc of allUserAccounts) {
         if (parseInt(acc.native_balance.amount) > 0) {
