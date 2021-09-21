@@ -65,6 +65,9 @@ const buildContextMenu = function (allUserAccounts) {
         label: 'Logout',
         click: () => logout()
     },
+    {
+        type: 'separator'
+    },
     ...permanentContextMenuTemplate
     ];
     for (let acc of allUserAccounts) {
