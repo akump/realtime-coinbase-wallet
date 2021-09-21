@@ -22,17 +22,21 @@ let apiKey;
 let apiSecret;
 let hasCache = false;
 
-const permanentContextMenuTemplate = [{
-    label: 'Love the app? Buy me a coffee ☕',
-    click: () => shell.openExternal('https://www.buymeacoffee.com/akump')
-},
-{
-    label: 'Quit',
-    click: () => {
-        isQuiting = true;
-        app.quit();
-    }
-}];
+const permanentContextMenuTemplate = [
+    {
+        type: 'separator'
+    },
+    {
+        label: 'Love the app? Buy me a coffee ☕',
+        click: () => shell.openExternal('https://www.buymeacoffee.com/akump')
+    },
+    {
+        label: 'Quit',
+        click: () => {
+            isQuiting = true;
+            app.quit();
+        }
+    }];
 
 const connectMenuTemplate = [{
     label: 'Connect to Coinbase...',
@@ -64,9 +68,6 @@ const buildContextMenu = function (allUserAccounts) {
     {
         label: 'Logout',
         click: () => logout()
-    },
-    {
-        type: 'separator'
     },
     ...permanentContextMenuTemplate
     ];
@@ -141,11 +142,9 @@ ipcMain.on('asynchronous-message', (event, arg) => {
     loginWindow.hide();
 });
 
-
 app.on('before-quit', function () {
     isQuiting = true;
 });
-
 
 app.whenReady().then(() => {
     app.dock.hide();
