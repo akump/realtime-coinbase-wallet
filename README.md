@@ -19,4 +19,4 @@ Reatlime Coinbase Wallet is a macOS menu bar application for Coinbase users to d
    6. Click the App Store and Identified Developers radial button.
    7. Look for “realtime-coin-wallet was blocked from opening because it is not from an identified developer” and click Open Anyway. (In older versions of macOS, you could click Anywhere and then click Allow From Anywhere.)
    8. Try rerunning the app.
-6. Click the app from menu bar, and follow the suggested documentation on how to generate your API key.
+6. Click the app from menu bar, and follow the suggested documentation on how to generate your API key
