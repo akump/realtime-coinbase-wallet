@@ -1,4 +1,3 @@
-// TODO write an about page
 const {
     app,
     Menu,
