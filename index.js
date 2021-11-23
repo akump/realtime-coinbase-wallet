@@ -38,11 +38,11 @@ const permanentContextMenuTemplate = [
     }];
 
 const connectMenuTemplate = [{
-    label: 'Connect to Coinbase...',
-    click: () => loginWindow.show()
+        label: 'Connect to Coinbase...',
+        click: () => loginWindow.show()
 
-},
-...permanentContextMenuTemplate
+    },
+    ...permanentContextMenuTemplate
 ];
 
 const logout = function () {
@@ -84,14 +84,14 @@ const buildContextMenu = function (allUserAccounts) {
     tray.setContextMenuFromTemplate(newContextMenu);
 };
 
-const updateTitle = function (pagination = {}, allUserAccounts = []) {
+const updateTitle = function (pag = null, allUserAccounts = []) {
     if (apiKey && apiSecret && coinClient) {
-        coinClient.getAccounts(pagination, (err, accounts, pagination) => {
+        coinClient.getAccounts(pag, (err, accounts, pagination) => {
             if (accounts) {
                 allUserAccounts = [...allUserAccounts, ...accounts];
             }
-            if (pagination) {
-                updateTitle(pagination, allUserAccounts)
+            if (pagination && pagination.next_uri) {
+                updateTitle(pagination, allUserAccounts);
             } else {
                 let totalPortfolioValue = allUserAccounts.reduce((previousValue, currentValue) => previousValue + parseFloat(currentValue.native_balance.amount), 0);
                 totalPortfolioValue = totalPortfolioValue.toFixed(2);
@@ -107,7 +107,7 @@ const updateTitle = function (pagination = {}, allUserAccounts = []) {
     } else {
         tray.setMonospacedTitle(`$0 - Connect account`);
     }
-}
+};
 
 const savedApiKey = readData('apiKey');
 const savedApiSecret = readData('apiSecret');
